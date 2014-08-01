@@ -17,6 +17,7 @@ Bundle your dependencies and run the installation generator:
 ```shell
 bundle
 bundle exec rails generate spree_klarna_invoice:migration
+bundle exec rake db:migrate
 ```
 
 Add KlarnaInvoice at backend
