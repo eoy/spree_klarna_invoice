@@ -3,7 +3,7 @@ Spree::CheckoutController.class_eval do
   def update
     test_mode=true
     billing_address = @order.billing_address
-    if params[:order] && params[:order][:payments_attributes] && params[:order][:payments_attributes].first && params[:order][:payments_attributes].first[:payment_method_id] && Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id]).is_a?(Spree::Gateway::KlarnaInvoice)
+    if params[:order] && params[:order][:payments_attributes] && params[:order][:payments_attributes].first && params[:order][:payments_attributes].first[:payment_method_id] && (gw = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])).is_a?(Spree::Gateway::KlarnaInvoice)
       if !params[:accept_agb] || "1" != params[:accept_agb]
         flash[:error] = Spree.t(:agb_must_be_accepted)
         redirect_to checkout_state_path(@order.state) and return
@@ -22,8 +22,8 @@ Spree::CheckoutController.class_eval do
         end
         billing_address.p_no = sprintf("%02u%02u%04u",params[:birthday_d].to_i,params[:birthday_m].to_i,params[:birthday_y].to_i)
       end
-      if params[:gender]
-        if "" == params[:gender]
+      if gw.gender_required?(@order.bill_address.country.iso)
+        if "" == params[:gender] || params[:gender].nil?
           flash[:error] = Spree.t(:gender_cannot_be_empty)
           redirect_to checkout_state_path(@order.state) and return
         end
